@@ -1,0 +1,46 @@
+version: '3.5'
+
+services:
+  jobs-find-postgres:
+    container_name: jobs-find-postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-abc123}
+      POSTGRES_DB: jobssearch
+      PGDATA: /data/postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - '54320:5432'
+    restart: always
+    healthcheck:
+      test: "pg_isready -U postgres"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  jobs-find-app:
+    container_name: jobs-find-app
+    build: .
+    environment:
+      PATH_WEBHOOK_DISCORD: ${URL_WEBHOOK_DISCORD:-123}
+      PATH_JOBS: ${URL_JOB_WEBHOOK:-123}
+      PG_HOST: ${POSTGRES_HOST:-jobs-find-postgres}
+      PG_USER: ${POSTGRES_USER:-postgres}
+      PG_PASS: ${POSTGRES_PASSWORD:-abc123}
+      PG_PORT: ${POSTGRES_PORT:-5432}
+      MIN_CRON_EXTRACT: ${MIN_CRON_EXTRACT:-120}
+      PAGE_SIZE_JOBS: ${PAGE_SIZE_JOBS:-3}
+      ITEM_SIZE_JOBS: ${ITEM_SIZE_JOBS:-100}
+      MIN_CRON_SEND: ${MIN_CRON_SEND:-10}
+      ITEM_SIZE_JOBS_SEND: ${ITEM_SIZE_JOBS_SEND:-10}
+    restart: always
+    links:
+      - jobs-find-postgres:jobs-find-postgres
+    ports:
+      - '3535:3000'
+    depends_on:
+      - jobs-find-postgres
+
+volumes:
+  postgres:
