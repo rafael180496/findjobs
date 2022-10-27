@@ -39,6 +39,7 @@ export class HttpJobsService {
             description: `
             Categoria: ${item.category}
             Link: ${item.linkjob}
+            Fecha: ${item.created.toISOString()}
             `,
           };
         }),
